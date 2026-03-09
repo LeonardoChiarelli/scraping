@@ -1,22 +1,17 @@
 import re
 
-price_pattern = r"(\$|R\$|€)\s?\d+[.,]?\d*"
+class ProductDetector:
+    def __init__(self):
+        self.price_pattern = re.compile(r"(\$|R\$|€)\s?\d+[.,]?\d*")
 
+    def analyze(self, html):
+        score = 0
+        
+        if self.price_pattern.search(html):
+            score += 3
+        if "schema.org/Product" in html:
+            score += 5
+        if "add-to-cart" in html.lower():
+            score += 3
 
-def is_product_page(html):
-
-    score = 0
-
-    if re.search(price_pattern, html):
-        score += 3
-
-    if "schema.org/Product" in html:
-        score += 5
-
-    if "add-to-cart" in html:
-        score += 3
-
-    if score >= 6:
-        return True
-
-    return False
+        return score >= 6

@@ -1,14 +1,20 @@
+import re
+
 class CleaningPipeline:
+    def __init__(self):
+        self.currency_pattern = re.compile(r"[^\d.,]")
 
-    def process_item(self, item, spider):
+    def process(self, item):
+        if not item or "price" not in item:
+            return item
 
-        if item.get("price"):
+        raw_price = item["price"]
+        clean_price = self.currency_pattern.sub("", raw_price)
+        clean_price = clean_price.replace(",", ".")
 
-            price = item["price"]
-
-            price = price.replace("R$", "")
-            price = price.replace(",", ".")
-
-            item["price"] = price.strip()
+        try:
+            item["price_numeric"] = float(clean_price)
+        except ValueError:
+            item["price_numeric"] = None
 
         return item

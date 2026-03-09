@@ -1,14 +1,26 @@
-version: "3"
+version: "3.8"
 
 services:
-
   redis:
-    image: redis:7
+    image: redis:7-alpine
     ports:
       - "6379:6379"
 
-  scraper:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: scraper
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: intelligence
+    ports:
+      - "5432:5432"
+
+  worker:
     build: .
     command: python run.py
     depends_on:
       - redis
+      - postgres
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DB_DSN: postgresql://scraper:password@postgres:5432/intelligence
