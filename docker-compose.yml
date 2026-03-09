@@ -1,10 +1,16 @@
-version: "3.8"
+version: '3.8'
 
 services:
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
   postgres:
     image: postgres:15-alpine
@@ -17,10 +23,12 @@ services:
 
   worker:
     build: .
-    command: python run.py
     depends_on:
       - redis
+      - rabbitmq
       - postgres
     environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/0
       DB_DSN: postgresql://scraper:password@postgres:5432/intelligence
+    command: scrapy crawl ecommerce_spider
